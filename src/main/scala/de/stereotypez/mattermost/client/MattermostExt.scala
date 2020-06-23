@@ -2,7 +2,6 @@ package de.stereotypez.mattermost.client
 
 import akka.http.scaladsl.model.StatusCodes
 import de.stereotypez.mattermost.client.model.Attachments
-import de.stereotypez.mattermost.client.model.Attachments
 import net.bis5.mattermost.client4.{MattermostClient, Pager}
 import net.bis5.mattermost.model.{Post, PostList, PostPatch, PostType}
 
@@ -35,7 +34,7 @@ object MattermostExt {
              pinned: Boolean = false,
              postType: PostType = PostType.DEFAULT,
              props: Map[String, AnyRef] = Map.empty,
-             attachments: Option[Attachments],
+             attachments: Option[Attachments] = None,
              fileIds: Seq[String] = Seq.empty): Try[String] = {
 
       val post = new Post()
