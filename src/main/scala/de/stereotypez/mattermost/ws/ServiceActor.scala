@@ -13,7 +13,6 @@ import akka.stream.scaladsl.{Flow, Keep, RestartSource, Source}
 import akka.stream.{KillSwitches, OverflowStrategy, UniqueKillSwitch}
 import de.stereotypez.mattermost.ws.Sender.ActorMessage
 import de.stereotypez.mattermost.ws.ServiceActorProtocol.{Connect, Disconnect, ServiceActorCommand}
-import de.stereotypez.mattermost.ws.ServiceActorProtocol.ServiceActorCommand
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContextExecutor, Future}

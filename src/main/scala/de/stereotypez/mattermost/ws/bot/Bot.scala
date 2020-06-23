@@ -67,7 +67,7 @@ class Bot(mmUrl: String, wsUrl: String, botToken: String, system: actor.ActorSys
 
 
   // start & connect websocket service
-  private val serviceActor: ActorRef[ServiceActorCommand] = system.spawn(ServiceActor(),"ServiceActor")
+  private val serviceActor: ActorRef[ServiceActorCommand] = system.spawn(ServiceActor(),s"ServiceActor-${java.util.UUID.randomUUID()}")
 
   private val hooks = mutable.Buffer.empty[Hook]
 
