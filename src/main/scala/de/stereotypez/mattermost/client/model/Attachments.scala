@@ -20,16 +20,19 @@ case class ActionButton(name: String, url: String, context: Map[String, String])
   }
 }
 
-case class ActionSelect(name: String, url: String, context: Map[String, String], options: Map[String, String])  extends Action {
+case class ActionSelect(name: String, url: String, context: Map[String, String], options: Seq[Tuple2[String, String]])  extends Action {
   override def forMM: util.Map[String, AnyRef] = {
     Map(
       "name" -> name,
       "integration" -> Map(
         "url" -> url,
-        "context" -> context.map(t => (t._1, t._2.asInstanceOf[AnyRef])).asJava,
-        "type" -> "select",
-        "options" -> options.map {case (key, value) => Map[String, AnyRef]("text" -> key, "value" -> value)}.asJava
-      ).asJava
+        "context" -> context.map(t => (t._1, t._2.asInstanceOf[AnyRef])).asJava
+      ).asJava,
+      "type" -> "select",
+      "options" -> options.map {
+        case (key, value) =>
+          Map[String, AnyRef]("text" -> key, "value" -> value).asJava
+      }.asJava
     ).asJava
   }
 }
