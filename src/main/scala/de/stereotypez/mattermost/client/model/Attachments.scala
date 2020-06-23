@@ -3,13 +3,32 @@ package de.stereotypez.mattermost.client.model
 import java.util
 import scala.jdk.CollectionConverters._
 
-case class Action(name: String, url: String, context: Map[String, String]) {
-  def forMM: util.Map[String, AnyRef] = {
+
+trait Action {
+  def forMM: util.Map[String, AnyRef]
+}
+
+case class ActionButton(name: String, url: String, context: Map[String, String]) extends Action {
+  override def forMM: util.Map[String, AnyRef] = {
     Map(
       "name" -> name,
       "integration" -> Map(
         "url" -> url,
         "context" -> context.map(t => (t._1, t._2.asInstanceOf[AnyRef])).asJava
+      ).asJava
+    ).asJava
+  }
+}
+
+case class ActionSelect(name: String, url: String, context: Map[String, String], options: Map[String, String])  extends Action {
+  override def forMM: util.Map[String, AnyRef] = {
+    Map(
+      "name" -> name,
+      "integration" -> Map(
+        "url" -> url,
+        "context" -> context.map(t => (t._1, t._2.asInstanceOf[AnyRef])).asJava,
+        "type" -> "select",
+        "options" -> options.map {case (key, value) => Map[String, AnyRef]("text" -> key, "value" -> value)}.asJava
       ).asJava
     ).asJava
   }
@@ -54,13 +73,4 @@ case class Attachments(attachments: Seq[Attachment] = Seq.empty) {
   def forMM: util.List[util.Map[String, AnyRef]] = {
     attachments.map(_.forMM).asJava
   }
-}
-
-class Test {
-
-  Attachments()
-    .add(Attachment(Some(Map("pretext" -> "This is the attachment pretext.")))
-      .add(Action("Get Studies", "http://chat.ume.de", Map("action" -> "Do something")))
-      .add(Action("Get Series", "http://chat.ume.de", Map("action" -> "Do something"))))
-
 }
