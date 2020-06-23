@@ -31,7 +31,7 @@ class Bot(mmUrl: String, wsUrl: String, botToken: String, system: actor.ActorSys
   private implicit val ec = system.getDispatcher
 
   // create mattermost client
-  private val mmc: MattermostClient = MattermostClient.builder()
+  val mmc: MattermostClient = MattermostClient.builder()
     .url(mmUrl)
     .logLevel(Level.INFO)
     .ignoreUnknownProperties()
