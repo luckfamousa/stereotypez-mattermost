@@ -7,7 +7,7 @@ Scala wrappers around mattermost4j and akka based websockets
     config.getString("mattermost.url"),
     config.getString("mattermost.wsurl"),
     config.getString("mattermost.bots.myBot.token"),
-    core.getActorSystem)
+    system /* ActorSystem */)
     .withHook {
       case event: EventMessage if event.event == "posted" =>
         // do sth. with event message
