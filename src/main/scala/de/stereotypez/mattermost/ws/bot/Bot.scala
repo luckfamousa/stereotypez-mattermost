@@ -61,7 +61,7 @@ class Bot(mmUrl: String, wsUrl: String, botToken: String, system: actor.ActorSys
           hooks.exists(_(msg).consumed)
 
         case Failure(ex) =>
-          system.log.error("Could not handle Websocket message.", ex)
+          system.log.error(ex, "Could not handle Websocket message.")
       })
     })
 
