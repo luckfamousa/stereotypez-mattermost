@@ -8,7 +8,7 @@ object Protocol {
 
   case class EventMessage (
     event: String,
-    data: Map[String, String],
+    data: Option[Data],
     broadcast: Broadcast,
     seq: Long
   )  extends MattermostMessage
@@ -23,6 +23,19 @@ object Protocol {
     user_id: String,
     channel_id: String,
     team_id: String
+  )
+
+  case class Data(
+    channel_display_name: Option[String],
+    channel_name: Option[String],
+    channel_type: Option[String],
+    mentions: Option[String],
+    post: Option[String],
+    sender_name: Option[String],
+    set_online: Option[Boolean],
+    team_id: Option[String],
+    status: Option[String],
+    user_id: Option[String]
   )
 
   case class Post(
@@ -43,14 +56,18 @@ object Protocol {
     hashtags: String,
     pending_post_id: String,
     reply_count: Long,
-    metadata: Map[String, JsValue]
+    metadata: Map[String, JsValue],
+    sender_name: String,
+    set_online: Boolean,
+    team_id: String
   )
 
   // --- spray ---
-  object JsonProtocol extends DefaultJsonProtocol
+  object JsonProtocol extends DefaultJsonProtocol /*with NullOptions*/
   import JsonProtocol._
   implicit val BroadcastFormat: RootJsonFormat[Broadcast] = jsonFormat4(Broadcast)
+  implicit val DataFormat: RootJsonFormat[Data] = jsonFormat10(Data)
   implicit val EventMessageFormat: RootJsonFormat[EventMessage] = jsonFormat4(EventMessage)
   implicit val StatusMessageFormat: RootJsonFormat[StatusMessage] = jsonFormat2(StatusMessage)
-  implicit val PostMessageFormat: RootJsonFormat[Post] = jsonFormat18(Post)
+  implicit val PostMessageFormat: RootJsonFormat[Post] = jsonFormat21(Post)
 }

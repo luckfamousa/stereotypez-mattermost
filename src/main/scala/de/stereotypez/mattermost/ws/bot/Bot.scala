@@ -44,6 +44,7 @@ class Bot(mmUrl: String, wsUrl: String, botToken: String, system: actor.ActorSys
       Try {
         m match {
           case m: TextMessage.Strict =>
+            system.log.debug(s"Got message: ${m.text}")
             m.text.parseJson.asJsObject match {
               case ast if ast.fields.contains("event") => ast.convertTo[EventMessage]
               case ast if ast.fields.contains("status") => ast.convertTo[StatusMessage]
@@ -59,7 +60,6 @@ class Bot(mmUrl: String, wsUrl: String, botToken: String, system: actor.ActorSys
         case Success(msg) =>
           // run all hooks until the first hook consumes the message
           hooks.exists(_(msg).consumed)
-
         case Failure(ex) =>
           system.log.error(ex, "Could not handle Websocket message.")
       })
