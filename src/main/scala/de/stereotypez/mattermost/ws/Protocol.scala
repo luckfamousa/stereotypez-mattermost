@@ -41,25 +41,25 @@ object Protocol {
   case class Post(
     id: String,
     create_at: Long,
-    update_at: Long,
-    edit_at: Long,
-    delete_at: Long,
+    update_at: Option[Long],
+    edit_at: Option[Long],
+    delete_at: Option[Long],
     is_pinned: Boolean,
     user_id: String,
     channel_id: String,
-    root_id: String,
-    parent_id: String,
-    original_id: String,
+    root_id: Option[String],
+    parent_id: Option[String],
+    original_id: Option[String],
     message: String,
-    `type`: String,
+    `type`: Option[String],
     props: Map[String, JsValue],
-    hashtags: String,
-    pending_post_id: String,
-    reply_count: Long,
+    hashtags: Option[String],
+    pending_post_id: Option[String],
+    reply_count: Option[Long],
     metadata: Map[String, JsValue],
-    sender_name: String,
-    set_online: Boolean,
-    team_id: String
+    sender_name: Option[String],
+    set_online: Option[Boolean],
+    team_id: Option[String]
   )
 
   // --- spray ---
