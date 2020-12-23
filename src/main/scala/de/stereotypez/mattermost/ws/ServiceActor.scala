@@ -11,6 +11,7 @@ import akka.http.scaladsl.model.ws.{Message, TextMessage, WebSocketRequest, WebS
 import akka.http.scaladsl.settings.ClientConnectionSettings
 import akka.stream.scaladsl.{Flow, Keep, RestartSource, Source}
 import akka.stream.{KillSwitches, OverflowStrategy, UniqueKillSwitch}
+import com.typesafe.scalalogging.LazyLogging
 import de.stereotypez.mattermost.ws.Sender.ActorMessage
 import de.stereotypez.mattermost.ws.ServiceActorProtocol.{Connect, Disconnect, ServiceActorCommand}
 
@@ -20,7 +21,7 @@ import scala.language.postfixOps
 import scala.util.{Failure, Success}
 
 
-object ServiceActor {
+object ServiceActor extends LazyLogging {
 
   /* SERVICE SETTINGS */
   case class ServiceSettings(receiveParallelism: Int,
@@ -67,8 +68,8 @@ object ServiceActor {
             RestartSource.withBackoff(1.second, 30.seconds, randomFactor = 0.2) { () => Source.futureSource {
               Future {
 
-                context.log.info(s"Connecting to Websocket service '$url' ...")
-
+                logger.info(s"Connecting to Websocket service '$url' ...")
+                
                 val webSocketFlow: Flow[Message, Message, Future[WebSocketUpgradeResponse]] = Http().webSocketClientFlow(
                   request = WebSocketRequest(url),
                   settings = clientSettings.getOrElse(ClientConnectionSettings(system)
@@ -85,12 +86,12 @@ object ServiceActor {
                   .viaMat(webSocketFlow)(Keep.right)
                   .mapMaterializedValue(_.onComplete {
                     case Success(upgrade) if upgrade.response.status == StatusCodes.SwitchingProtocols =>
-                      context.log.info(s"Connected to Websocket service '$url'")
+                      logger.info(s"Connected to Websocket service '$url'")
                       ref ! ActorMessage(1, "authentication_challenge", Map("token" -> authToken))
                     case Success(upgrade) =>
-                      context.log.warn(s"Connection to Websocket service '$url' failed: ${upgrade.response.status}")
+                      logger.warn(s"Connection to Websocket service '$url' failed: ${upgrade.response.status}")
                     case Failure(ex) =>
-                      context.log.error(s"Connection to Websocket service '$url' failed", ex)
+                      logger.error(s"Connection to Websocket service '$url' failed", ex)
                   })
               }
             }}
@@ -101,7 +102,7 @@ object ServiceActor {
           killableBehavior(killswitch)
 
         case Disconnect() =>
-          context.log.warn("Not connected to websocket.")
+          logger.warn("Not connected to websocket.")
           Behaviors.same
       }
     }
@@ -112,7 +113,7 @@ object ServiceActor {
           killswitch.shutdown()
           connectableBehavior()
         case Connect(_, _, _) =>
-          context.log.warn("Cannot connect, already connected to websocket.")
+          logger.warn("Cannot connect, already connected to websocket.")
           Behaviors.same
       }
     }
