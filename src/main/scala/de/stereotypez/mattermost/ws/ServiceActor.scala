@@ -20,7 +20,6 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.language.postfixOps
 import scala.util.{Failure, Success}
 
-
 object ServiceActor extends LazyLogging {
 
   /* SERVICE SETTINGS */
@@ -28,28 +27,24 @@ object ServiceActor extends LazyLogging {
                              outgoingBufferSize: Int,
                              outgoingOverflowStrategy: OverflowStrategy,
                              reconnectTimeout: FiniteDuration) {
-    def withReceiveParallelism(receiveParallelism: Int): ServiceSettings =
-      ServiceSettings(receiveParallelism, this.outgoingBufferSize, this.outgoingOverflowStrategy, this.reconnectTimeout)
-    def withOutgoingBufferSize(outgoingBufferSize: Int): ServiceSettings =
-      ServiceSettings(this.receiveParallelism, outgoingBufferSize, this.outgoingOverflowStrategy, this.reconnectTimeout)
-    def withOutgoingOverflowStrategy(outgoingOverflowStrategy: OverflowStrategy): ServiceSettings =
-      ServiceSettings(this.receiveParallelism, this.outgoingBufferSize, outgoingOverflowStrategy, this.reconnectTimeout)
-    def withReconnectTimeout(reconnectTimeout: FiniteDuration): ServiceSettings =
-      ServiceSettings(this.receiveParallelism, this.outgoingBufferSize, this.outgoingOverflowStrategy, reconnectTimeout)
+    def withReceiveParallelism(receiveParallelism: Int): ServiceSettings                          = this.copy(receiveParallelism = receiveParallelism)
+    def withOutgoingBufferSize(outgoingBufferSize: Int): ServiceSettings                          = this.copy(outgoingBufferSize = outgoingBufferSize)
+    def withOutgoingOverflowStrategy(outgoingOverflowStrategy: OverflowStrategy): ServiceSettings = this.copy(outgoingOverflowStrategy = outgoingOverflowStrategy)
+    def withReconnectTimeout(reconnectTimeout: FiniteDuration): ServiceSettings                   = this.copy(reconnectTimeout = reconnectTimeout)
   }
-  class DefaultServiceSettings extends ServiceSettings(10, 256, OverflowStrategy.fail, 5 seconds)
+
+  val DefaultServiceSettings = ServiceSettings(10, 256, OverflowStrategy.fail, 5 seconds)
 
   def apply(): Behavior[ServiceActorCommand] = {
     ServiceActor(clientSettings = None)
   }
 
-  def apply(serviceSettings: ServiceSettings = new DefaultServiceSettings(),
-            clientSettings: Option[ClientConnectionSettings] = None): Behavior[ServiceActorCommand] =
-    Behaviors
-      .supervise[ServiceActorCommand](
-        Behaviors.setup(serviceActorImpl(_, serviceSettings, clientSettings))
-      )
-      .onFailure(SupervisorStrategy.restart)
+  def apply(
+    serviceSettings: ServiceSettings = DefaultServiceSettings,
+    clientSettings: Option[ClientConnectionSettings] = None
+  ): Behavior[ServiceActorCommand] = Behaviors.supervise[ServiceActorCommand](
+    Behaviors.setup(serviceActorImpl(_, serviceSettings, clientSettings))
+  ).onFailure(SupervisorStrategy.restartWithBackoff(1.second, 5.seconds, 0.2))
 
 
   private def serviceActorImpl(context: ActorContext[ServiceActorCommand],

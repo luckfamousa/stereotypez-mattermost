@@ -6,7 +6,6 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.adapter._
 import akka.http.scaladsl.model.ws.{Message, TextMessage}
 import akka.stream.scaladsl.{Flow, Sink}
-import akka.{NotUsed, actor}
 import Bot.Hook
 import de.stereotypez.mattermost.ws.Protocol.{EventMessage, MattermostMessage, StatusMessage}
 import de.stereotypez.mattermost.ws.ServiceActorProtocol.{Connect, Disconnect, ServiceActorCommand}
@@ -17,16 +16,18 @@ import spray.json._
 import scala.collection.mutable
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
+import akka.NotUsed
 
 object Bot {
-
   case class HookResult(handled: Boolean, consumed: Boolean)
   type Hook = MattermostMessage => HookResult
 
-  def apply(mmUrl: String, wsUrl: String, botToken: String, system: actor.ActorSystem) = new Bot(mmUrl, wsUrl, botToken, system)
+  def apply(mmUrl: String, wsUrl: String, botToken: String, system: akka.actor.ActorSystem) = {
+    new Bot(mmUrl, wsUrl, botToken, system)
+  }
 }
 
-class Bot(mmUrl: String, wsUrl: String, botToken: String, system: actor.ActorSystem) {
+class Bot(mmUrl: String, wsUrl: String, botToken: String, system: akka.actor.ActorSystem) {
 
   private implicit val ec = system.getDispatcher
 
