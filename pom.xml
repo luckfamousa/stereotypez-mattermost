@@ -11,7 +11,7 @@
 
     <!-- scala -->
     <scala.version.major>2.13</scala.version.major>
-    <scala.version>${scala.version.major}.1</scala.version>
+    <scala.version>${scala.version.major}.6</scala.version>
 
     <!-- akka -->
     <akka.version>2.6.3</akka.version>
