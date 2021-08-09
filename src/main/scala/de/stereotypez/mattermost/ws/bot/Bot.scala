@@ -22,11 +22,13 @@ object Bot {
   case class HookResult(handled: Boolean, consumed: Boolean)
   type Hook = MattermostMessage => HookResult
 
+  @deprecated("Use BotActor", "2021-08-09")
   def apply(mmUrl: String, wsUrl: String, botToken: String, system: akka.actor.ActorSystem) = {
     new Bot(mmUrl, wsUrl, botToken, system)
   }
 }
 
+@deprecated("Use BotActor", "2021-08-09")
 class Bot(mmUrl: String, wsUrl: String, botToken: String, system: akka.actor.ActorSystem) {
 
   private implicit val ec = system.getDispatcher
