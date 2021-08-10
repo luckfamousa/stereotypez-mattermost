@@ -1,4 +1,4 @@
-package de.stereotypez.mattermost.ws
+package de.stereotypez.mattermost.ws.bot
 
 import akka.NotUsed
 import akka.actor.ActorSystem
@@ -21,6 +21,7 @@ import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import com.typesafe.scalalogging.LazyLogging
 import de.stereotypez.mattermost.ws.Sender.ActorMessage
+import de.stereotypez.mattermost.ws.HookFlow
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -30,8 +31,12 @@ import scala.util.Success
 import akka.stream.KillSwitches
 import akka.actor.typed.PostStop
 import scala.concurrent.ExecutionContext
+import de.stereotypez.mattermost.ws.Sender
+import net.bis5.mattermost.client4.MattermostClient
 
 object BotActor extends LazyLogging {
+  type Hook = HookFlow.Hook
+  type HookResult = HookFlow.HookResult
   
   sealed trait Command
   private case object Connected extends Command
@@ -49,6 +54,16 @@ object BotActor extends LazyLogging {
     reconnectTimeout: FiniteDuration = 5.seconds,
     hookExecutionContext: ExecutionContext = ExecutionContext.global
   )
+
+  def mattermostClient(mattermostUrl: String, botToken: String) = {
+    val mmc = MattermostClient.builder()
+      .url(mattermostUrl)
+      .logLevel(java.util.logging.Level.INFO)
+      .ignoreUnknownProperties()
+      .build()
+      mmc.setAccessToken(botToken)
+      mmc
+  }
 
   def withHooks(
     websocketUrl: String, 
