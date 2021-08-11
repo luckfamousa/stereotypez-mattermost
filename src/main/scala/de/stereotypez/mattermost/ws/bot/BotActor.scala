@@ -33,6 +33,7 @@ import akka.actor.typed.PostStop
 import scala.concurrent.ExecutionContext
 import de.stereotypez.mattermost.ws.Sender
 import net.bis5.mattermost.client4.MattermostClient
+import java.util.logging.Level
 
 object BotActor extends LazyLogging {
   type Hook = HookFlow.Hook
@@ -55,10 +56,10 @@ object BotActor extends LazyLogging {
     hookExecutionContext: ExecutionContext = ExecutionContext.global
   )
 
-  def mattermostClient(mattermostUrl: String, botToken: String) = {
+  def mattermostClient(mattermostUrl: String, botToken: String, logLevel: Level = Level.INFO) = {
     val mmc = MattermostClient.builder()
       .url(mattermostUrl)
-      .logLevel(java.util.logging.Level.INFO)
+      .logLevel(logLevel)
       .ignoreUnknownProperties()
       .build()
       mmc.setAccessToken(botToken)
