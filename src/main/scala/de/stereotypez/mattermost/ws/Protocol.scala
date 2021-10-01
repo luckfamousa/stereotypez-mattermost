@@ -10,7 +10,7 @@ object Protocol {
 
   //TODO: perhaps retrieve this via reflection?
   val parsers: List[EventParser] = List(
-    events.Posted, events.Typing, events.UserRemoved
+    events.Posted, events.Typing, events.UserRemoved, events.StatusChange
   )
 
   object JsonProtocol extends DefaultJsonProtocol
