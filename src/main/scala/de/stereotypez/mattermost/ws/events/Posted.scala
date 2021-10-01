@@ -22,16 +22,16 @@ object Posted extends EventParser(eventType = "posted"){
         original_id: String,
         message: String,
         `type`: String,
-        props: String, //TODO
+        props: Map[String, JsValue],
         hashtags: String,
         pending_post_id: String,
         reply_count: Long,
         last_reply_at: Long,
-        participants: String, //TODO
+        //participants: String, //TODO
         is_following: Boolean,
-        metadata: String //TODO
+        metadata: Map[String, JsValue]
     )
-    implicit val PostFormat: RootJsonFormat[Post] = jsonFormat20(Post)
+    implicit val PostFormat: RootJsonFormat[Post] = jsonFormat19(Post)
 
     case class PostData(
         channel_display_name: String,
