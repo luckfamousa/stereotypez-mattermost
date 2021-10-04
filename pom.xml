@@ -16,7 +16,6 @@
     <!-- akka -->
     <akka.version>2.6.15</akka.version>
     <akka.http.version>10.2.6</akka.http.version>
-
   </properties>
 
   <build>
@@ -162,6 +161,18 @@
       <artifactId>logback-classic</artifactId>
       <version>1.2.3</version>
       <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.scalactic</groupId>
+    <artifactId>scalactic_${scala.version.major}</artifactId>
+    <version>3.2.10</version>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.scalatest</groupId>
+    <artifactId>scalatest_${scala.version.major}</artifactId>
+    <version>3.2.10</version>
+    <scope>test</scope>
   </dependency>
   </dependencies>
 </project>
