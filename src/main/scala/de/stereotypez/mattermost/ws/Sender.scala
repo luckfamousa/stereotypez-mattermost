@@ -20,15 +20,19 @@ object Sender {
   import NullOptionsJsonProtocol._
   implicit val MessageFormat: RootJsonFormat[ActorMessage] = jsonFormat3(ActorMessage)
 
-  def create(bufferSize: Int = 8, overflowStrategy: OverflowStrategy = OverflowStrategy.fail)(implicit materializer: Materializer): (ActorRef[Protocol], Source[TextMessage.Strict, NotUsed]) = {
+  def create(
+    bufferSize: Int = 8, 
+    overflowStrategy: OverflowStrategy = OverflowStrategy.fail
+  )(implicit materializer: Materializer): (ActorRef[Protocol], Source[TextMessage.Strict, NotUsed]) = {
     ActorSource.actorRef[Protocol] (
       completionMatcher = { case Complete => },
       failureMatcher = { case Fail(ex) => ex},
       bufferSize = bufferSize,
-      overflowStrategy = overflowStrategy)
-      .collect { case msg: ActorMessage => msg.toJson.toString() }
-      .map(TextMessage(_))
-      .preMaterialize()
+      overflowStrategy = overflowStrategy
+    )
+    .collect { case msg: ActorMessage => msg.toJson.toString() }
+    .map(TextMessage(_))
+    .preMaterialize()
   }
 
 }
