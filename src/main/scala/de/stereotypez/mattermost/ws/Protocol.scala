@@ -1,22 +1,37 @@
 package de.stereotypez.mattermost.ws
 
+import de.stereotypez.mattermost.ws.events
 import spray.json._
 
 object Protocol {
+  abstract class EventParser(val eventType: String){
+    def convert(js: JsValue): WSEventData
+  }
 
-  trait MattermostMessage
+  //TODO: perhaps retrieve this via reflection?
+  val parsers: List[EventParser] = List(
+    events.Posted, events.Typing, events.UserRemoved, events.StatusChange
+  )
 
-  case class EventMessage (
+  object JsonProtocol extends DefaultJsonProtocol
+  import JsonProtocol._
+
+  type JsonEncodedString = String
+  trait WebsocketMessage
+
+  case class WebsocketResponse(
+    status: String,
+    seq_reply: Long,
+  ) extends WebsocketMessage
+  implicit val WSResponseFormat: RootJsonFormat[WebsocketResponse] = jsonFormat2(WebsocketResponse)
+
+  trait WSEventData
+  case class WebsocketEvent(
     event: String,
-    data: Option[Data],
+    seq: Long,
     broadcast: Broadcast,
-    seq: Long
-  )  extends MattermostMessage
-
-  case class StatusMessage(
-    status: Option[String],
-    seq_reply: Long
-  )  extends MattermostMessage
+    data: WSEventData
+  ) extends WebsocketMessage
 
   case class Broadcast(
     omit_users: Option[JsValue],
@@ -24,50 +39,28 @@ object Protocol {
     channel_id: String,
     team_id: String
   )
+  implicit val broadCastFormat: RootJsonFormat[Broadcast] = jsonFormat4(Broadcast)
 
-  case class Data(
-    channel_display_name: Option[String],
-    channel_name: Option[String],
-    channel_type: Option[String],
-    mentions: Option[String],
-    post: Option[String],
-    sender_name: Option[String],
-    set_online: Option[Boolean],
-    team_id: Option[String],
-    status: Option[String],
-    user_id: Option[String]
-  )
+  //incase an event is either unimplemented or unknown in general
+  case class FallbackData(
+    json: JsObject
+  ) extends WSEventData
 
-  case class Post(
-    id: String,
-    create_at: Long,
-    update_at: Option[Long],
-    edit_at: Option[Long],
-    delete_at: Option[Long],
-    is_pinned: Boolean,
-    user_id: String,
-    channel_id: String,
-    root_id: Option[String],
-    parent_id: Option[String],
-    original_id: Option[String],
-    message: String,
-    `type`: Option[String],
-    props: Map[String, JsValue],
-    hashtags: Option[String],
-    pending_post_id: Option[String],
-    reply_count: Option[Long],
-    metadata: Map[String, JsValue],
-    sender_name: Option[String],
-    set_online: Option[Boolean],
-    team_id: Option[String]
-  )
-
-  // --- spray ---
-  object JsonProtocol extends DefaultJsonProtocol /*with NullOptions*/
-  import JsonProtocol._
-  implicit val BroadcastFormat: RootJsonFormat[Broadcast] = jsonFormat4(Broadcast)
-  implicit val DataFormat: RootJsonFormat[Data] = jsonFormat10(Data)
-  implicit val EventMessageFormat: RootJsonFormat[EventMessage] = jsonFormat4(EventMessage)
-  implicit val StatusMessageFormat: RootJsonFormat[StatusMessage] = jsonFormat2(StatusMessage)
-  implicit val PostMessageFormat: RootJsonFormat[Post] = jsonFormat21(Post)
+  implicit object WSEventFormat extends RootJsonFormat[WebsocketEvent]{
+    def read(json: JsValue): WebsocketEvent = {
+      val fields = json.asJsObject.fields
+      val event = fields.get("event").get.convertTo[String]
+      val jsonData= fields.get("data").get
+      val data = parsers.find(parser=> parser.eventType==event).flatMap(parser=>Some(parser.convert(jsonData))).getOrElse(FallbackData(jsonData.asJsObject))
+      WebsocketEvent(
+        event = event,
+        seq = fields.get("seq").get.convertTo[Long],
+        data = data,
+        broadcast = fields.get("broadcast").get.convertTo[Broadcast]
+      )
+    }
+    
+    def write(obj: WebsocketEvent): JsValue = ???
+    
+  }
 }

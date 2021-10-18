@@ -1,6 +1,15 @@
+
 package de.stereotypez.mattermost.ws
 
+import de.stereotypez.mattermost.ws.events._
+import de.stereotypez.mattermost.ws.Protocol._
+import de.stereotypez.mattermost.ws.Protocol.JsonProtocol._
+
+import org.junit.Test
+import org.junit.Assert._
+
 import de.stereotypez.mattermost.ws.Protocol.{Broadcast, Data, EventMessage, Post, StatusMessage}
+
 import spray.json._
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers._
